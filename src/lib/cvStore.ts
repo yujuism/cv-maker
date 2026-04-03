@@ -1,11 +1,10 @@
-import { ref, push, set, update, remove, get, query, orderByChild, equalTo } from 'firebase/database';
+import { ref, push, set, update, remove, get } from 'firebase/database';
 import { db } from './firebase';
 import type { CV, CVData, TemplateId } from './types';
 import { defaultCVData, blankCVData } from './defaultCV';
 
 export async function getCVs(userId: string): Promise<CV[]> {
-	const q = query(ref(db, 'cvs'), orderByChild('userId'), equalTo(userId));
-	const snap = await get(q);
+	const snap = await get(ref(db, `users/${userId}/cvs`));
 	if (!snap.exists()) return [];
 	const cvs: CV[] = [];
 	snap.forEach((child) => {
@@ -21,7 +20,7 @@ export async function createCV(
 	startFrom: 'default' | 'blank' = 'default'
 ): Promise<string> {
 	const now = Date.now();
-	const newRef = push(ref(db, 'cvs'));
+	const newRef = push(ref(db, `users/${userId}/cvs`));
 	await set(newRef, {
 		userId,
 		name,
@@ -33,16 +32,16 @@ export async function createCV(
 	return newRef.key as string;
 }
 
-export async function updateCV(id: string, updates: Partial<Omit<CV, 'id'>>): Promise<void> {
-	await update(ref(db, `cvs/${id}`), { ...updates, updatedAt: Date.now() });
+export async function updateCV(userId: string, id: string, updates: Partial<Omit<CV, 'id'>>): Promise<void> {
+	await update(ref(db, `users/${userId}/cvs/${id}`), { ...updates, updatedAt: Date.now() });
 }
 
-export async function getCV(id: string): Promise<CV | null> {
-	const snap = await get(ref(db, `cvs/${id}`));
+export async function getCV(userId: string, id: string): Promise<CV | null> {
+	const snap = await get(ref(db, `users/${userId}/cvs/${id}`));
 	if (!snap.exists()) return null;
 	return { id: snap.key as string, ...snap.val() };
 }
 
-export async function deleteCV(id: string): Promise<void> {
-	await remove(ref(db, `cvs/${id}`));
+export async function deleteCV(userId: string, id: string): Promise<void> {
+	await remove(ref(db, `users/${userId}/cvs/${id}`));
 }

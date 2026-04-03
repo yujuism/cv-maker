@@ -45,8 +45,9 @@
 	}
 
 	async function handleDelete(id: string) {
-		if (!confirm('Delete this CV?')) return;
-		await deleteCV(id);
+		const user = getUser();
+		if (!user || !confirm('Delete this CV?')) return;
+		await deleteCV(user.uid, id);
 		cvs = cvs.filter((c) => c.id !== id);
 	}
 

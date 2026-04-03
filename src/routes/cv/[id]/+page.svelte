@@ -23,15 +23,18 @@
 	});
 
 	async function loadCV() {
+		const user = getUser();
+		if (!user) return;
 		loading = true;
-		cv = await getCV(id);
+		cv = await getCV(user.uid, id);
 		loading = false;
 	}
 
 	async function save() {
-		if (!cv) return;
+		const user = getUser();
+		if (!cv || !user) return;
 		saving = true;
-		await updateCV(cv.id, { data: cv.data, templateId: cv.templateId, name: cv.name });
+		await updateCV(user.uid, cv.id, { data: cv.data, templateId: cv.templateId, name: cv.name });
 		saving = false;
 		saveMsg = 'Saved!';
 		setTimeout(() => (saveMsg = ''), 2000);

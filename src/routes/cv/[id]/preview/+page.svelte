@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { getCV } from '$lib/cvStore';
+	import { getUser } from '$lib/authStore.svelte';
 	import type { CV } from '$lib/types';
 	import BlueSidebar from '$lib/templates/BlueSidebar.svelte';
 	import MinimalClean from '$lib/templates/MinimalClean.svelte';
@@ -15,8 +16,10 @@
 	});
 
 	async function loadCV() {
+		const user = getUser();
+		if (!user) return;
 		loading = true;
-		cv = await getCV(id);
+		cv = await getCV(user.uid, id);
 		loading = false;
 	}
 
