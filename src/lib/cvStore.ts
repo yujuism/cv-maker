@@ -1,28 +1,17 @@
-import {
-	collection,
-	doc,
-	addDoc,
-	updateDoc,
-	deleteDoc,
-	getDocs,
-	query,
-	where,
-	orderBy
-} from 'firebase/firestore';
+import { ref, push, set, update, remove, get, query, orderByChild, equalTo } from 'firebase/database';
 import { db } from './firebase';
 import type { CV, CVData, TemplateId } from './types';
 import { defaultCVData } from './defaultCV';
 
-const COLLECTION = 'cvs';
-
 export async function getCVs(userId: string): Promise<CV[]> {
-	const q = query(
-		collection(db, COLLECTION),
-		where('userId', '==', userId),
-		orderBy('updatedAt', 'desc')
-	);
-	const snap = await getDocs(q);
-	return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as CV);
+	const q = query(ref(db, 'cvs'), orderByChild('userId'), equalTo(userId));
+	const snap = await get(q);
+	if (!snap.exists()) return [];
+	const cvs: CV[] = [];
+	snap.forEach((child) => {
+		cvs.push({ id: child.key as string, ...child.val() });
+	});
+	return cvs.sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
 export async function createCV(
@@ -32,7 +21,8 @@ export async function createCV(
 	data?: Partial<CVData>
 ): Promise<string> {
 	const now = Date.now();
-	const ref = await addDoc(collection(db, COLLECTION), {
+	const newRef = push(ref(db, 'cvs'));
+	await set(newRef, {
 		userId,
 		name,
 		templateId,
@@ -40,13 +30,19 @@ export async function createCV(
 		createdAt: now,
 		updatedAt: now
 	});
-	return ref.id;
+	return newRef.key as string;
 }
 
 export async function updateCV(id: string, updates: Partial<Omit<CV, 'id'>>): Promise<void> {
-	await updateDoc(doc(db, COLLECTION, id), { ...updates, updatedAt: Date.now() });
+	await update(ref(db, `cvs/${id}`), { ...updates, updatedAt: Date.now() });
+}
+
+export async function getCV(id: string): Promise<CV | null> {
+	const snap = await get(ref(db, `cvs/${id}`));
+	if (!snap.exists()) return null;
+	return { id: snap.key as string, ...snap.val() };
 }
 
 export async function deleteCV(id: string): Promise<void> {
-	await deleteDoc(doc(db, COLLECTION, id));
+	await remove(ref(db, `cvs/${id}`));
 }

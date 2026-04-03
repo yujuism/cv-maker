@@ -2,10 +2,9 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { getUser } from '$lib/authStore.svelte';
-	import { db, storage } from '$lib/firebase';
-	import { doc, getDoc } from 'firebase/firestore';
+	import { storage } from '$lib/firebase';
 	import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-	import { updateCV } from '$lib/cvStore';
+	import { getCV, updateCV } from '$lib/cvStore';
 	import type { CV, CVData, TemplateId, WorkExperience, Education, Language, Skill } from '$lib/types';
 	import BlueSidebar from '$lib/templates/BlueSidebar.svelte';
 	import MinimalClean from '$lib/templates/MinimalClean.svelte';
@@ -25,10 +24,7 @@
 
 	async function loadCV() {
 		loading = true;
-		const snap = await getDoc(doc(db, 'cvs', id));
-		if (snap.exists()) {
-			cv = { id: snap.id, ...snap.data() } as CV;
-		}
+		cv = await getCV(id);
 		loading = false;
 	}
 

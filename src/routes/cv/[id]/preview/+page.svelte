@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { db } from '$lib/firebase';
-	import { doc, getDoc } from 'firebase/firestore';
+	import { getCV } from '$lib/cvStore';
 	import type { CV } from '$lib/types';
 	import BlueSidebar from '$lib/templates/BlueSidebar.svelte';
 	import MinimalClean from '$lib/templates/MinimalClean.svelte';
@@ -17,8 +16,7 @@
 
 	async function loadCV() {
 		loading = true;
-		const snap = await getDoc(doc(db, 'cvs', id));
-		if (snap.exists()) cv = { id: snap.id, ...snap.data() } as CV;
+		cv = await getCV(id);
 		loading = false;
 	}
 
