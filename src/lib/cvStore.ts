@@ -1,7 +1,7 @@
 import { ref, push, set, update, remove, get, query, orderByChild, equalTo } from 'firebase/database';
 import { db } from './firebase';
 import type { CV, CVData, TemplateId } from './types';
-import { defaultCVData } from './defaultCV';
+import { defaultCVData, blankCVData } from './defaultCV';
 
 export async function getCVs(userId: string): Promise<CV[]> {
 	const q = query(ref(db, 'cvs'), orderByChild('userId'), equalTo(userId));
@@ -18,7 +18,7 @@ export async function createCV(
 	userId: string,
 	name: string,
 	templateId: TemplateId,
-	data?: Partial<CVData>
+	startFrom: 'default' | 'blank' = 'default'
 ): Promise<string> {
 	const now = Date.now();
 	const newRef = push(ref(db, 'cvs'));
@@ -26,7 +26,7 @@ export async function createCV(
 		userId,
 		name,
 		templateId,
-		data: { ...defaultCVData, ...data },
+		data: startFrom === 'blank' ? blankCVData : defaultCVData,
 		createdAt: now,
 		updatedAt: now
 	});

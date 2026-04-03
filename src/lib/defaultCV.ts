@@ -155,3 +155,19 @@ I love learning and exploring new things, not just in technology, but also in sc
 		{ id: '5', name: 'Vietnamese', writeLevel: 'Low', speakLevel: 'Low' }
 	]
 };
+
+export const blankCVData: CVData = {
+	name: '',
+	title: '',
+	phone: '',
+	email: '',
+	skype: '',
+	address: '',
+	linkedin: '',
+	photoUrl: '',
+	about: '',
+	skills: [],
+	workExperience: [],
+	education: [],
+	languages: []
+};
