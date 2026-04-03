@@ -31,9 +31,19 @@
 <svelte:head>
 	<title>{cv?.name ?? 'CV'} — Preview</title>
 	<style>
+		@page {
+			size: A4;
+			margin: 0;
+		}
 		@media print {
-			body { margin: 0; }
+			html, body {
+				margin: 0;
+				padding: 0;
+				-webkit-print-color-adjust: exact;
+				print-color-adjust: exact;
+			}
 			.no-print { display: none !important; }
+			nav { display: none !important; }
 		}
 	</style>
 </svelte:head>

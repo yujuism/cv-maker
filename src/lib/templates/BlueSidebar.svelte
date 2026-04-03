@@ -4,54 +4,54 @@
 	let { data }: { data: CVData } = $props();
 </script>
 
-<div class="cv-page font-sans text-[11px] leading-tight text-gray-800 bg-white flex" style="width:210mm; min-height:297mm; font-family:'Segoe UI',sans-serif;">
+<div style="width:210mm; min-height:297mm; font-family:'Segoe UI',Arial,sans-serif; font-size:11px; line-height:1.4; color:#1f2937; background:#fff; display:flex;">
 	<!-- Left sidebar -->
-	<div class="w-[38%] bg-[#f0f2f5] flex flex-col items-center pt-8 pb-6 px-5">
+	<div style="width:38%; background:#f0f2f5; display:flex; flex-direction:column; align-items:center; padding:32px 20px 24px;">
 		<!-- Photo -->
 		{#if data.photoUrl}
-			<img src={data.photoUrl} alt={data.name} class="w-24 h-24 rounded-full object-cover border-4 border-white shadow mb-4" />
-		{:else}
-			<div class="w-24 h-24 rounded-full bg-gray-400 flex items-center justify-center text-white text-3xl font-bold mb-4 border-4 border-white shadow">
+			<img src={data.photoUrl} alt={data.name} style="width:96px; height:96px; border-radius:50%; object-fit:cover; border:4px solid white; margin-bottom:16px;" />
+		{:else if data.name}
+			<div style="width:96px; height:96px; border-radius:50%; background:#9ca3af; display:flex; align-items:center; justify-content:center; color:white; font-size:30px; font-weight:700; margin-bottom:16px; border:4px solid white;">
 				{data.name.charAt(0)}
 			</div>
 		{/if}
 
 		<!-- Contact -->
-		<section class="w-full mb-5">
-			<div class="flex items-center gap-2 mb-2">
-				<div class="flex-1 h-[2px] bg-[#2563eb]"></div>
-				<h2 class="text-[10px] font-bold tracking-widest text-gray-700 uppercase px-1">Contact</h2>
-				<div class="flex-1 h-[2px] bg-[#2563eb]"></div>
+		<section style="width:100%; margin-bottom:20px;">
+			<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+				<div style="flex:1; height:2px; background:#2563eb;"></div>
+				<h2 style="font-size:10px; font-weight:700; letter-spacing:0.1em; color:#374151; text-transform:uppercase; padding:0 4px;">Contact</h2>
+				<div style="flex:1; height:2px; background:#2563eb;"></div>
 			</div>
-			<ul class="space-y-1.5 mt-2">
+			<ul style="list-style:none; padding:0; margin:8px 0 0;">
 				{#if data.phone}
-				<li class="flex items-start gap-2">
-					<span class="text-[#2563eb] mt-[1px]">📞</span>
-					<span class="break-all">{data.phone}</span>
+				<li style="display:flex; gap:8px; margin-bottom:6px;">
+					<span style="color:#2563eb;">📞</span>
+					<span style="word-break:break-all;">{data.phone}</span>
 				</li>
 				{/if}
 				{#if data.email}
-				<li class="flex items-start gap-2">
-					<span class="text-[#2563eb] mt-[1px]">✉</span>
-					<span class="break-all">{data.email}</span>
+				<li style="display:flex; gap:8px; margin-bottom:6px;">
+					<span style="color:#2563eb;">✉</span>
+					<span style="word-break:break-all;">{data.email}</span>
 				</li>
 				{/if}
 				{#if data.skype}
-				<li class="flex items-start gap-2">
-					<span class="text-[#2563eb] mt-[1px]">💬</span>
+				<li style="display:flex; gap:8px; margin-bottom:6px;">
+					<span style="color:#2563eb;">💬</span>
 					<span>{data.skype}</span>
 				</li>
 				{/if}
 				{#if data.address}
-				<li class="flex items-start gap-2">
-					<span class="text-[#2563eb] mt-[1px]">📍</span>
+				<li style="display:flex; gap:8px; margin-bottom:6px;">
+					<span style="color:#2563eb;">📍</span>
 					<span>{data.address}</span>
 				</li>
 				{/if}
 				{#if data.linkedin}
-				<li class="flex items-start gap-2">
-					<span class="text-[#2563eb] mt-[1px]">🔗</span>
-					<span class="break-all text-[9px]">{data.linkedin}</span>
+				<li style="display:flex; gap:8px; margin-bottom:6px;">
+					<span style="color:#2563eb;">🔗</span>
+					<span style="word-break:break-all; font-size:9px;">{data.linkedin}</span>
 				</li>
 				{/if}
 			</ul>
@@ -59,18 +59,18 @@
 
 		<!-- Skills -->
 		{#if data.skills.length > 0}
-		<section class="w-full mb-5">
-			<div class="flex items-center gap-2 mb-2">
-				<div class="flex-1 h-[2px] bg-[#2563eb]"></div>
-				<h2 class="text-[10px] font-bold tracking-widest text-gray-700 uppercase px-1">Skills</h2>
-				<div class="flex-1 h-[2px] bg-[#2563eb]"></div>
+		<section style="width:100%; margin-bottom:20px;">
+			<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+				<div style="flex:1; height:2px; background:#2563eb;"></div>
+				<h2 style="font-size:10px; font-weight:700; letter-spacing:0.1em; color:#374151; text-transform:uppercase; padding:0 4px;">Skills</h2>
+				<div style="flex:1; height:2px; background:#2563eb;"></div>
 			</div>
-			<ul class="space-y-2 mt-2">
+			<ul style="list-style:none; padding:0; margin:8px 0 0;">
 				{#each data.skills as skill}
-				<li>
-					<span class="font-semibold text-[9.5px] uppercase tracking-wide">{skill.name}</span>
-					<div class="h-1.5 bg-gray-300 rounded-full mt-0.5">
-						<div class="h-1.5 bg-[#2563eb] rounded-full" style="width:{skill.level}%"></div>
+				<li style="margin-bottom:8px;">
+					<span style="font-size:9.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">{skill.name}</span>
+					<div style="height:6px; background:#d1d5db; border-radius:999px; margin-top:2px;">
+						<div style="height:6px; background:#2563eb; border-radius:999px; width:{skill.level}%;"></div>
 					</div>
 				</li>
 				{/each}
@@ -80,17 +80,17 @@
 
 		<!-- Languages -->
 		{#if data.languages.length > 0}
-		<section class="w-full">
-			<div class="flex items-center gap-2 mb-2">
-				<div class="flex-1 h-[2px] bg-[#2563eb]"></div>
-				<h2 class="text-[10px] font-bold tracking-widest text-gray-700 uppercase px-1">Languages</h2>
-				<div class="flex-1 h-[2px] bg-[#2563eb]"></div>
+		<section style="width:100%;">
+			<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+				<div style="flex:1; height:2px; background:#2563eb;"></div>
+				<h2 style="font-size:10px; font-weight:700; letter-spacing:0.1em; color:#374151; text-transform:uppercase; padding:0 4px;">Languages</h2>
+				<div style="flex:1; height:2px; background:#2563eb;"></div>
 			</div>
-			<ul class="space-y-1.5 mt-2">
+			<ul style="list-style:none; padding:0; margin:8px 0 0;">
 				{#each data.languages as lang}
-				<li class="flex justify-between">
-					<span class="font-semibold">{lang.name}</span>
-					<span class="text-gray-500 text-[9px]">Write: {lang.writeLevel} | Spoken: {lang.speakLevel}</span>
+				<li style="display:flex; justify-content:space-between; margin-bottom:6px;">
+					<span style="font-weight:600;">{lang.name}</span>
+					<span style="color:#6b7280; font-size:9px;">Write: {lang.writeLevel} | Spoken: {lang.speakLevel}</span>
 				</li>
 				{/each}
 			</ul>
@@ -99,64 +99,60 @@
 	</div>
 
 	<!-- Right main content -->
-	<div class="flex-1 px-6 py-8">
+	<div style="flex:1; padding:32px 24px;">
 		<!-- Name & Title -->
-		<div class="mb-5">
-			<h1 class="text-[26px] font-bold text-gray-900 leading-none">{data.name}</h1>
-			<p class="text-[11px] font-semibold tracking-widest text-gray-500 uppercase mt-1">{data.title}</p>
+		<div style="margin-bottom:20px;">
+			<h1 style="font-size:26px; font-weight:700; color:#111827; line-height:1;">{data.name}</h1>
+			<p style="font-size:11px; font-weight:600; letter-spacing:0.15em; color:#6b7280; text-transform:uppercase; margin-top:4px;">{data.title}</p>
 		</div>
 
 		<!-- About Me -->
 		{#if data.about}
-		<section class="mb-5">
-			<div class="bg-[#2563eb] text-white font-bold text-[10px] tracking-widest uppercase px-3 py-1.5 mb-2">About Me</div>
-			<p class="text-[10px] text-gray-700 leading-relaxed whitespace-pre-line">{data.about}</p>
+		<section style="margin-bottom:20px;">
+			<div style="background:#2563eb; color:white; font-weight:700; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:6px 12px; margin-bottom:8px;">About Me</div>
+			<p style="font-size:10px; color:#374151; line-height:1.6; white-space:pre-line;">{data.about}</p>
 		</section>
 		{/if}
 
 		<!-- Work Experience -->
 		{#if data.workExperience.length > 0}
-		<section class="mb-5">
-			<div class="bg-[#2563eb] text-white font-bold text-[10px] tracking-widest uppercase px-3 py-1.5 mb-2">Work Experience</div>
-			<div class="space-y-4">
-				{#each data.workExperience as exp}
-				<div>
-					<div class="text-[9px] text-gray-500">{exp.startYear} - {exp.endYear}</div>
-					<div class="font-bold text-[10.5px] uppercase">{exp.title}</div>
-					<div class="text-[9.5px] text-gray-600 mb-1">{exp.company}{exp.location ? ', ' + exp.location : ''}</div>
-					{#if exp.description.length > 0}
-					<div class="font-semibold text-[9.5px] mb-0.5">Description:</div>
-					<ol class="list-decimal list-inside space-y-0.5 pl-1">
-						{#each exp.description as point}
-						<li class="text-[9px] text-gray-700">{point}</li>
-						{/each}
-					</ol>
-					{/if}
-					{#if exp.techStack}
-					<div class="mt-1">
-						<span class="font-semibold text-[9.5px]">Tech Stack: </span>
-						<span class="text-[9px] text-gray-700">{exp.techStack}</span>
-					</div>
-					{/if}
+		<section style="margin-bottom:20px;">
+			<div style="background:#2563eb; color:white; font-weight:700; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:6px 12px; margin-bottom:8px;">Work Experience</div>
+			{#each data.workExperience as exp}
+			<div style="margin-bottom:16px;">
+				<div style="font-size:9px; color:#9ca3af;">{exp.startYear} - {exp.endYear}</div>
+				<div style="font-weight:700; font-size:10.5px; text-transform:uppercase;">{exp.title}</div>
+				<div style="font-size:9.5px; color:#4b5563; margin-bottom:4px;">{exp.company}{exp.location ? ', ' + exp.location : ''}</div>
+				{#if exp.description.length > 0}
+				<div style="font-weight:600; font-size:9.5px; margin-bottom:2px;">Description:</div>
+				<ol style="margin:0 0 0 16px; padding:0;">
+					{#each exp.description as point}
+					<li style="font-size:9px; color:#374151; margin-bottom:2px;">{point}</li>
+					{/each}
+				</ol>
+				{/if}
+				{#if exp.techStack}
+				<div style="margin-top:4px;">
+					<span style="font-weight:600; font-size:9.5px;">Tech Stack: </span>
+					<span style="font-size:9px; color:#374151;">{exp.techStack}</span>
 				</div>
-				{/each}
+				{/if}
 			</div>
+			{/each}
 		</section>
 		{/if}
 
 		<!-- Education -->
 		{#if data.education.length > 0}
 		<section>
-			<div class="bg-[#2563eb] text-white font-bold text-[10px] tracking-widest uppercase px-3 py-1.5 mb-2">Education</div>
-			<div class="space-y-2">
-				{#each data.education as edu}
-				<div>
-					<div class="text-[9px] text-gray-500">{edu.startYear} - {edu.endYear}</div>
-					<div class="font-semibold text-[10px]">{edu.degree || '-'}</div>
-					<div class="text-[9.5px] text-gray-600">{edu.institution}</div>
-				</div>
-				{/each}
+			<div style="background:#2563eb; color:white; font-weight:700; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:6px 12px; margin-bottom:8px;">Education</div>
+			{#each data.education as edu}
+			<div style="margin-bottom:8px;">
+				<div style="font-size:9px; color:#9ca3af;">{edu.startYear} - {edu.endYear}</div>
+				<div style="font-weight:600; font-size:10px;">{edu.degree || '-'}</div>
+				<div style="font-size:9.5px; color:#4b5563;">{edu.institution}</div>
 			</div>
+			{/each}
 		</section>
 		{/if}
 	</div>
