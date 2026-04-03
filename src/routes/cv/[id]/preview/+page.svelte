@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { getCV } from '$lib/cvStore';
-	import { getUser } from '$lib/authStore.svelte';
+	import { getUser, isLoading } from '$lib/authStore.svelte';
 	import type { CV } from '$lib/types';
 	import BlueSidebar from '$lib/templates/BlueSidebar.svelte';
 	import MinimalClean from '$lib/templates/MinimalClean.svelte';
@@ -12,7 +12,7 @@
 	const id = $derived(page.params.id);
 
 	$effect(() => {
-		loadCV();
+		if (!isLoading()) loadCV();
 	});
 
 	async function loadCV() {

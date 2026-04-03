@@ -3,12 +3,24 @@ import { db } from './firebase';
 import type { CV, CVData, TemplateId } from './types';
 import { blankCVData } from './defaultCV';
 
+function sanitizeCV(id: string, val: any): CV {
+	val.data = {
+		...blankCVData,
+		...val.data,
+		skills: val.data?.skills ? Object.values(val.data.skills) : [],
+		workExperience: val.data?.workExperience ? Object.values(val.data.workExperience) : [],
+		education: val.data?.education ? Object.values(val.data.education) : [],
+		languages: val.data?.languages ? Object.values(val.data.languages) : []
+	};
+	return { id, ...val };
+}
+
 export async function getCVs(userId: string): Promise<CV[]> {
 	const snap = await get(ref(db, `users/${userId}/cvs`));
 	if (!snap.exists()) return [];
 	const cvs: CV[] = [];
 	snap.forEach((child) => {
-		cvs.push({ id: child.key as string, ...child.val() });
+		cvs.push(sanitizeCV(child.key as string, child.val()));
 	});
 	return cvs.sort((a, b) => b.updatedAt - a.updatedAt);
 }
@@ -38,7 +50,7 @@ export async function updateCV(userId: string, id: string, updates: Partial<Omit
 export async function getCV(userId: string, id: string): Promise<CV | null> {
 	const snap = await get(ref(db, `users/${userId}/cvs/${id}`));
 	if (!snap.exists()) return null;
-	return { id: snap.key as string, ...snap.val() };
+	return sanitizeCV(snap.key as string, snap.val());
 }
 
 export async function deleteCV(userId: string, id: string): Promise<void> {

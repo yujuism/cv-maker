@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { getUser } from '$lib/authStore.svelte';
+	import { getUser, isLoading } from '$lib/authStore.svelte';
 	import { storage } from '$lib/firebase';
 	import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 	import { getCV, updateCV } from '$lib/cvStore';
@@ -19,12 +19,15 @@
 	const id = $derived(page.params.id);
 
 	$effect(() => {
-		loadCV();
+		if (!isLoading()) loadCV();
 	});
 
 	async function loadCV() {
 		const user = getUser();
-		if (!user) return;
+		if (!user) {
+			goto('/');
+			return;
+		}
 		loading = true;
 		cv = await getCV(user.uid, id);
 		loading = false;
