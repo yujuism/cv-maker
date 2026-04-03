@@ -9,7 +9,6 @@
 	let showCreate = $state(false);
 	let newName = $state('');
 	let newTemplate = $state<TemplateId>('blue-sidebar');
-	let newStartFrom = $state<'default' | 'blank'>('default');
 	let creating = $state(false);
 
 	async function load() {
@@ -37,7 +36,7 @@
 		const user = getUser();
 		if (!user || !newName.trim()) return;
 		creating = true;
-		const id = await createCV(user.uid, newName.trim(), newTemplate, newStartFrom);
+		const id = await createCV(user.uid, newName.trim(), newTemplate);
 		creating = false;
 		showCreate = false;
 		newName = '';
@@ -125,13 +124,6 @@
 				<select id="new-cv-template" bind:value={newTemplate} class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
 					<option value="blue-sidebar">Blue Sidebar</option>
 					<option value="minimal-clean">Minimal Clean</option>
-				</select>
-			</div>
-			<div>
-				<label for="new-cv-start" class="block text-sm font-medium text-gray-700 mb-1">Start from</label>
-				<select id="new-cv-start" bind:value={newStartFrom} class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-					<option value="default">My CV data (prefilled)</option>
-					<option value="blank">Blank</option>
 				</select>
 			</div>
 		</div>

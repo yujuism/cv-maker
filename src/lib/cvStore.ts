@@ -1,7 +1,7 @@
 import { ref, push, set, update, remove, get } from 'firebase/database';
 import { db } from './firebase';
 import type { CV, CVData, TemplateId } from './types';
-import { defaultCVData, blankCVData } from './defaultCV';
+import { blankCVData } from './defaultCV';
 
 export async function getCVs(userId: string): Promise<CV[]> {
 	const snap = await get(ref(db, `users/${userId}/cvs`));
@@ -16,8 +16,7 @@ export async function getCVs(userId: string): Promise<CV[]> {
 export async function createCV(
 	userId: string,
 	name: string,
-	templateId: TemplateId,
-	startFrom: 'default' | 'blank' = 'default'
+	templateId: TemplateId
 ): Promise<string> {
 	const now = Date.now();
 	const newRef = push(ref(db, `users/${userId}/cvs`));
@@ -25,7 +24,7 @@ export async function createCV(
 		userId,
 		name,
 		templateId,
-		data: startFrom === 'blank' ? blankCVData : defaultCVData,
+		data: blankCVData,
 		createdAt: now,
 		updatedAt: now
 	});
