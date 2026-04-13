@@ -5,7 +5,7 @@ import {
 	createUserWithEmailAndPassword,
 	signInWithEmailAndPassword,
 	sendEmailVerification,
-	PhoneAuthProvider,
+	reload,
 	RecaptchaVerifier,
 	signInWithPhoneNumber,
 	type ConfirmationResult
@@ -39,8 +39,24 @@ export async function signOut() {
 
 export async function registerWithEmail(email: string, password: string) {
 	const cred = await createUserWithEmailAndPassword(auth, email, password);
-	await sendEmailVerification(cred.user);
+	await sendEmailVerification(cred.user, {
+		url: `${window.location.origin}/`
+	});
 	return cred.user;
+}
+
+export async function resendVerificationEmail() {
+	if (!user) throw new Error('Not logged in');
+	await sendEmailVerification(user, {
+		url: `${window.location.origin}/`
+	});
+}
+
+export async function reloadUser() {
+	if (!user) return;
+	await reload(user);
+	// trigger reactivity by reassigning
+	user = auth.currentUser;
 }
 
 export async function loginWithEmail(email: string, password: string) {

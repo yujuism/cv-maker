@@ -3,6 +3,7 @@
 	import {
 		getUser,
 		isLoading,
+		signOut,
 		signInWithGoogle,
 		loginWithEmail,
 		registerWithEmail,
@@ -12,8 +13,9 @@
 	} from '$lib/authStore.svelte';
 	import type { RecaptchaVerifier } from 'firebase/auth';
 
-	type Mode = 'login' | 'register' | 'otp-send' | 'otp-verify';
+	type Mode = 'login' | 'register' | 'otp-send' | 'otp-verify' | 'verify-pending';
 	let mode = $state<Mode>('login');
+	let pendingEmail = $state('');
 
 	// Email/password fields
 	let email = $state('');
@@ -30,9 +32,9 @@
 
 	let recaptcha: RecaptchaVerifier | null = null;
 
-	// Redirect if already logged in
+	// Redirect if already logged in and verified
 	$effect(() => {
-		if (!isLoading() && getUser()) goto('/');
+		if (!isLoading() && getUser()?.emailVerified) goto('/');
 	});
 
 	function reset() {
@@ -45,8 +47,13 @@
 		if (!email || !password) { error = 'Please fill in all fields.'; return; }
 		submitting = true;
 		try {
-			await loginWithEmail(email, password);
-			goto('/');
+			const u = await loginWithEmail(email, password);
+			if (!u.emailVerified) {
+				error = 'Please verify your email before signing in. Check your inbox.';
+				await signOut();
+			} else {
+				goto('/');
+			}
 		} catch (e: any) {
 			error = friendlyError(e.code);
 		} finally {
@@ -62,8 +69,10 @@
 		submitting = true;
 		try {
 			await registerWithEmail(email, password);
-			info = 'Account created! A verification email has been sent. You can now sign in.';
-			mode = 'login';
+			pendingEmail = email;
+			// sign out so they can't bypass verification by browsing directly
+			await signOut();
+			mode = 'verify-pending';
 			password = '';
 			confirmPassword = '';
 		} catch (e: any) {
@@ -145,6 +154,22 @@
 		<div class="text-center mb-6">
 			<a href="/" class="text-2xl font-bold text-blue-600">CV Maker</a>
 		</div>
+
+		{#if mode === 'verify-pending'}
+			<!-- VERIFY EMAIL STATE -->
+			<div class="text-center py-4 space-y-4">
+				<div class="text-5xl">✉️</div>
+				<h2 class="text-lg font-bold text-gray-800">Check your inbox</h2>
+				<p class="text-sm text-gray-500">
+					We sent a verification link to <strong>{pendingEmail}</strong>.<br />
+					Click it to activate your account — you'll be taken straight to the app.
+				</p>
+				<p class="text-xs text-gray-400">Didn't receive it? Check your spam folder.</p>
+				<button onclick={() => { mode = 'login'; reset(); }} class="w-full border border-gray-300 text-gray-600 py-2 rounded-lg text-sm hover:bg-gray-50 mt-2">
+					Back to Login
+				</button>
+			</div>
+		{:else}
 
 		<!-- Tabs: Login / Register / OTP -->
 		<div class="flex border-b border-gray-200 mb-6 text-sm font-medium">
@@ -260,5 +285,7 @@
 			<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M47.5 24.6c0-1.6-.1-3.1-.4-4.6H24v8.7h13.2c-.6 3-2.3 5.5-4.9 7.2v6h7.9c4.6-4.3 7.3-10.6 7.3-17.3z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.9-6c-2.1 1.4-4.8 2.3-8 2.3-6.1 0-11.3-4.1-13.2-9.7H2.7v6.2C6.7 42.8 14.8 48 24 48z"/><path fill="#FBBC05" d="M10.8 28.8c-.5-1.4-.7-2.9-.7-4.4s.2-3 .7-4.4v-6.2H2.7C1 17.1 0 20.4 0 24s1 6.9 2.7 9.9l8.1-5.1z"/><path fill="#EA4335" d="M24 9.5c3.4 0 6.5 1.2 8.9 3.5l6.6-6.6C35.9 2.5 30.4 0 24 0 14.8 0 6.7 5.2 2.7 14.1l8.1 6.2C12.7 13.6 17.9 9.5 24 9.5z"/></svg>
 			Sign in with Google
 		</button>
+
+		{/if}
 	</div>
 </div>
