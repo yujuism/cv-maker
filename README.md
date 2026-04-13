@@ -2,17 +2,13 @@
 
 A web app to create and manage multiple CVs with different templates, built with SvelteKit and Firebase.
 
-**Live:** https://cv-maker-sanyan.web.app
-
----
-
 ## Features
 
 - **Multiple CVs** — create as many CVs as you want, each with its own content and template
 - **Two templates** — Blue Sidebar and Minimal Clean
 - **Live preview** — see changes reflected instantly as you type
 - **Print / PDF export** — clean output with no browser header/footer
-- **Profile photo** — upload a photo stored in Firebase Storage
+- **Profile photo** — upload via Firebase Storage
 - **Authentication** — Google OAuth, Email/Password, and Phone OTP (SMS)
 - **Email verification** — email/password accounts must verify before access
 - **Per-user data** — each user's CVs are private and isolated
@@ -25,36 +21,41 @@ A web app to create and manage multiple CVs with different templates, built with
 | Styling | TailwindCSS v4 |
 | Auth | Firebase Authentication (Google, Email, Phone OTP) |
 | Database | Firebase Realtime Database |
-| Storage | Firebase Storage (profile photos) |
+| Storage | Firebase Storage |
 | Hosting | Firebase Hosting |
 | CI/CD | GitHub Actions |
 | Package manager | pnpm |
 
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - Node.js 18+
 - pnpm
-- A Firebase project with Realtime Database, Storage, and Authentication enabled
+- A Firebase project
 
-### Installation
+## Firebase Setup
 
-```bash
-git clone https://github.com/yujuism/cv-maker.git
-cd cv-maker
-pnpm install
+1. Go to https://console.firebase.google.com and create a new project
+2. Enable **Authentication** → Sign-in methods: **Google**, **Email/Password**, **Phone**
+3. Enable **Realtime Database** — start in locked mode
+4. Enable **Storage**
+5. Copy your project's Firebase config into `src/lib/firebase.ts`:
+
+```ts
+const firebaseConfig = {
+  apiKey: '...',
+  authDomain: '...',
+  databaseURL: '...',
+  projectId: '...',
+  storageBucket: '...',
+  messagingSenderId: '...',
+  appId: '...',
+  measurementId: '...'
+};
 ```
 
-### Firebase Setup
+### Realtime Database Rules
 
-1. Create a Firebase project at https://console.firebase.google.com
-2. Enable **Authentication** → Sign-in methods: Google, Email/Password, Phone
-3. Enable **Realtime Database** (Asia Southeast region recommended)
-4. Enable **Storage**
-5. Copy your Firebase config into `src/lib/firebase.ts`
-
-Set Realtime Database rules:
+In Firebase Console → Realtime Database → Rules, set:
 
 ```json
 {
@@ -69,35 +70,42 @@ Set Realtime Database rules:
 }
 ```
 
-Set the custom email action handler URL in Firebase Console:
-**Authentication → Templates → Email address verification → Action URL:**
+### Custom Email Verification Handler
+
+In Firebase Console → Authentication → Templates → Email address verification → edit the template and set **Action URL** to:
+
 ```
-https://cv-maker-sanyan.web.app/auth/action
+https://<your-domain>/auth/action
 ```
 
-### Development
+This redirects users to your app after clicking the verification link instead of Firebase's default page.
+
+## Running Locally
 
 ```bash
+git clone https://github.com/yujuism/cv-maker.git
+cd cv-maker
+pnpm install
 pnpm dev
 ```
 
-### Build
+## Building
 
 ```bash
 pnpm build
 ```
 
-## Deployment
+## Deployment (Firebase Hosting + GitHub Actions)
 
-Deployed automatically via GitHub Actions on push to `main`.
+The included GitHub Actions workflow deploys automatically on push to `main` and creates preview channels for pull requests.
 
 ### Setup
 
-1. Generate a Firebase service account key (Project Settings → Service accounts → Generate new private key)
-2. Add it as a GitHub secret named `FIREBASE_SERVICE_ACCOUNT_CV_MAKER_6E43F`
-3. Push to `main` — the workflow handles the rest
-
-The workflow also creates **preview channels** for pull requests.
+1. In Firebase Console → Project Settings → Service accounts → **Generate new private key**
+2. Add the downloaded JSON as a GitHub Actions secret — name it `FIREBASE_SERVICE_ACCOUNT_<YOUR_PROJECT_ID>` (uppercase, hyphens replaced with underscores)
+3. Update `.firebaserc` with your project ID and hosting site name
+4. Update `.github/workflows/deploy.yml` — replace `projectId` and `channelId` target with your own
+5. Push to `main`
 
 ## Project Structure
 
@@ -120,17 +128,10 @@ src/
     │   └── action/
     │       └── +page.svelte # Email verification handler
     └── cv/[id]/
-        ├── +page.svelte     # CV editor (live preview)
+        ├── +page.svelte     # CV editor with live preview
         └── preview/
-            └── +page.svelte # Full-page preview + print/PDF
+            └── +page.svelte # Full-page preview + print/PDF export
 ```
-
-## Authentication Flow
-
-- **Google** — sign in with popup, redirected to dashboard immediately
-- **Email/Password** — register → verify email → login → dashboard
-- **Phone OTP** — enter phone → receive SMS → enter code → dashboard
-- Unverified email accounts are blocked with a banner and cannot access any content
 
 ## License
 
