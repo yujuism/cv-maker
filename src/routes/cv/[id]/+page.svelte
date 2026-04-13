@@ -25,7 +25,7 @@
 	async function loadCV() {
 		const user = getUser();
 		if (!user) {
-			goto('/');
+			goto('/auth');
 			return;
 		}
 		loading = true;

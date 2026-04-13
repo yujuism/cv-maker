@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getUser, isLoading, signInWithGoogle } from '$lib/authStore.svelte';
+	import { getUser, isLoading } from '$lib/authStore.svelte';
 	import { getCVs, createCV, deleteCV } from '$lib/cvStore';
 	import type { CV, TemplateId } from '$lib/types';
 	import { goto } from '$app/navigation';
@@ -20,7 +20,10 @@
 	}
 
 	$effect(() => {
-		if (!isLoading() && getUser()) load();
+		if (!isLoading()) {
+			if (getUser()) load();
+			else goto('/auth');
+		}
 	});
 
 	// Reload list when tab becomes visible again (e.g. returning from editor)
@@ -57,16 +60,8 @@
 </script>
 
 <main class="max-w-4xl mx-auto px-6 py-10">
-	{#if isLoading()}
+	{#if isLoading() || !getUser()}
 		<div class="text-center py-20 text-gray-400">Loading…</div>
-	{:else if !getUser()}
-		<div class="text-center py-20">
-			<h1 class="text-3xl font-bold text-gray-800 mb-3">CV Maker</h1>
-			<p class="text-gray-500 mb-8">Create and manage multiple CVs with different templates</p>
-			<button onclick={signInWithGoogle} class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg hover:bg-blue-700 transition">
-				Sign in with Google to get started
-			</button>
-		</div>
 	{:else}
 		<div class="flex items-center justify-between mb-8">
 			<h1 class="text-2xl font-bold text-gray-800">My CVs</h1>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import { getCV } from '$lib/cvStore';
 	import { getUser, isLoading } from '$lib/authStore.svelte';
 	import type { CV } from '$lib/types';
@@ -17,7 +18,10 @@
 
 	async function loadCV() {
 		const user = getUser();
-		if (!user) return;
+		if (!user) {
+			goto('/auth');
+			return;
+		}
 		loading = true;
 		cv = await getCV(user.uid, id);
 		loading = false;
