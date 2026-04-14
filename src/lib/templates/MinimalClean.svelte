@@ -4,7 +4,7 @@
 	let { data }: { data: CVData } = $props();
 </script>
 
-<div class="cv-page font-sans text-[11px] leading-tight text-gray-800 bg-white px-12 py-10" style="width:210mm; min-height:297mm; font-family:'Georgia',serif;">
+<div class="cv-page font-sans text-[11px] leading-tight text-gray-800 bg-white px-12 py-10" style="width:210mm; font-family:'Georgia',serif;">
 	<!-- Header -->
 	<div class="flex items-start justify-between border-b-2 border-gray-900 pb-4 mb-6">
 		<div class="flex items-center gap-5">

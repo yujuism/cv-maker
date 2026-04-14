@@ -329,7 +329,7 @@
 	</div>
 
 	<!-- Live Preview -->
-	<div class="flex-1 overflow-auto bg-gray-200 p-8 flex justify-center">
+	<div class="flex-1 overflow-auto bg-gray-200 p-8 flex justify-center items-start">
 		<div class="shadow-2xl">
 			{#if cv.templateId === 'blue-sidebar'}
 				<BlueSidebar data={cv.data} />

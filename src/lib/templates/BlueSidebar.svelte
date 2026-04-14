@@ -4,9 +4,9 @@
 	let { data }: { data: CVData } = $props();
 </script>
 
-<div style="width:210mm; min-height:297mm; font-family:'Segoe UI',Arial,sans-serif; font-size:11px; line-height:1.4; color:#1f2937; background:#fff; display:flex;">
+<div style="width:210mm; font-family:'Segoe UI',Arial,sans-serif; font-size:11px; line-height:1.4; color:#1f2937; background:#fff; display:flex;">
 	<!-- Left sidebar -->
-	<div style="width:38%; background:#f0f2f5; display:flex; flex-direction:column; align-items:center; padding:32px 20px 24px;">
+	<div style="width:38%; background:#f0f2f5; display:flex; flex-direction:column; align-items:center; padding:32px 20px 24px; align-self:stretch;">
 		<!-- Photo -->
 		{#if data.photoUrl}
 			<img src={data.photoUrl} alt={data.name} style="width:96px; height:96px; border-radius:50%; object-fit:cover; border:4px solid white; margin-bottom:16px;" />
