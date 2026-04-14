@@ -36,23 +36,28 @@
 		if (!el || !cv) return;
 		exporting = true;
 		try {
-			const canvas = await html2canvas(el, { scale: 2, useCORS: true });
-			const imgData = canvas.toDataURL('image/png');
-			const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+			const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+			const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'a4' });
 			const pageW = pdf.internal.pageSize.getWidth();
 			const pageH = pdf.internal.pageSize.getHeight();
-			// scale image width to page width, split into multiple pages
-			const imgW = pageW;
-			const imgH = (canvas.height * pageW) / canvas.width;
-			let yPos = 0;
-			let remaining = imgH;
-			while (remaining > 0) {
-				pdf.addImage(imgData, 'PNG', 0, -yPos, imgW, imgH);
-				remaining -= pageH;
-				if (remaining > 0) {
-					pdf.addPage();
-					yPos += pageH;
-				}
+			// how many px is one pdf page height, given canvas width maps to pageW
+			const ratio = canvas.width / pageW;
+			const pageHeightPx = pageH * ratio;
+			const totalPages = Math.ceil(canvas.height / pageHeightPx);
+
+			for (let i = 0; i < totalPages; i++) {
+				if (i > 0) pdf.addPage();
+				// create a slice canvas for this page
+				const sliceCanvas = document.createElement('canvas');
+				sliceCanvas.width = canvas.width;
+				sliceCanvas.height = Math.min(pageHeightPx, canvas.height - i * pageHeightPx);
+				const ctx = sliceCanvas.getContext('2d')!;
+				ctx.fillStyle = '#ffffff';
+				ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+				ctx.drawImage(canvas, 0, -i * pageHeightPx);
+				const imgData = sliceCanvas.toDataURL('image/png');
+				const sliceH = (sliceCanvas.height / ratio);
+				pdf.addImage(imgData, 'PNG', 0, 0, pageW, sliceH);
 			}
 			pdf.save(`${cv.data.name || cv.name || 'cv'}.pdf`);
 		} finally {
@@ -90,9 +95,6 @@
 		<a href="/cv/{cv.id}" class="text-sm text-gray-500 hover:text-gray-700">← Back to editor</a>
 		<div class="flex items-center gap-3">
 			<span class="text-sm text-gray-700 font-medium">{cv.name}</span>
-			<button onclick={() => window.print()} class="border border-gray-300 text-gray-600 text-sm px-4 py-1.5 rounded hover:bg-gray-50">
-				Print
-			</button>
 			<button onclick={exportPDF} disabled={exporting} class="bg-blue-600 text-white text-sm px-4 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50">
 				{exporting ? 'Exporting…' : 'Download PDF'}
 			</button>

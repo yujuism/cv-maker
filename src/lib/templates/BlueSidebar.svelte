@@ -4,9 +4,9 @@
 	let { data }: { data: CVData } = $props();
 </script>
 
-<div style="width:210mm; font-family:'Segoe UI',Arial,sans-serif; font-size:11px; line-height:1.4; color:#1f2937; background:#fff; display:flex;">
+<div style="width:210mm; font-family:'Segoe UI',Arial,sans-serif; font-size:9.5px; line-height:1.3; color:#1f2937; background:#fff; display:flex;">
 	<!-- Left sidebar -->
-	<div style="width:38%; background:#f0f2f5; display:flex; flex-direction:column; align-items:center; padding:32px 20px 24px; align-self:stretch;">
+	<div style="width:36%; background:#f0f2f5; display:flex; flex-direction:column; align-items:center; padding:20px 14px 16px; align-self:stretch;">
 		<!-- Photo -->
 		{#if data.photoUrl}
 			<img src={data.photoUrl} alt={data.name} style="width:96px; height:96px; border-radius:50%; object-fit:cover; border:4px solid white; margin-bottom:16px;" />
@@ -119,7 +119,7 @@
 		<section style="margin-bottom:20px;">
 			<div style="background:#2563eb; color:white; font-weight:700; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:6px 12px; margin-bottom:8px;">Work Experience</div>
 			{#each data.workExperience as exp}
-			<div style="margin-bottom:16px;">
+			<div style="margin-bottom:12px; page-break-inside:avoid;">
 				<div style="font-size:9px; color:#9ca3af;">{exp.startYear} - {exp.endYear}</div>
 				<div style="font-weight:700; font-size:10.5px; text-transform:uppercase;">{exp.title}</div>
 				<div style="font-size:9.5px; color:#4b5563; margin-bottom:4px;">{exp.company}{exp.location ? ', ' + exp.location : ''}</div>
