@@ -15,11 +15,33 @@
 	let saveMsg = $state('');
 	let uploadingPhoto = $state(false);
 	let activeTab = $state<'personal' | 'skills' | 'experience' | 'education' | 'languages'>('personal');
+	let shareCopied = $state(false);
+	let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function copyShareLink() {
+		const user = getUser();
+		if (!user || !cv) return;
+		const url = `${window.location.origin}/share/${user.uid}/${cv.id}`;
+		navigator.clipboard.writeText(url);
+		shareCopied = true;
+		setTimeout(() => (shareCopied = false), 2000);
+	}
 
 	const id = $derived(page.params.id);
 
 	$effect(() => {
 		if (!isLoading()) loadCV();
+	});
+
+	// Auto-save: debounce 2s after any cv change
+	$effect(() => {
+		if (!cv || loading) return;
+		// track cv deeply by stringifying — triggers on any nested change
+		JSON.stringify(cv);
+		if (autoSaveTimer) clearTimeout(autoSaveTimer);
+		autoSaveTimer = setTimeout(() => {
+			save(true);
+		}, 2000);
 	});
 
 	async function loadCV() {
@@ -33,13 +55,13 @@
 		loading = false;
 	}
 
-	async function save() {
+	async function save(auto = false) {
 		const user = getUser();
 		if (!cv || !user) return;
 		saving = true;
 		await updateCV(user.uid, cv.id, { data: cv.data, templateId: cv.templateId, name: cv.name });
 		saving = false;
-		saveMsg = 'Saved!';
+		saveMsg = auto ? 'Auto-saved' : 'Saved!';
 		setTimeout(() => (saveMsg = ''), 2000);
 	}
 
@@ -144,7 +166,7 @@
 			</div>
 			<div class="flex items-center gap-2">
 				{#if saveMsg}<span class="text-xs text-green-600">{saveMsg}</span>{/if}
-				<button onclick={save} disabled={saving} class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50">
+				<button onclick={() => save(false)} disabled={saving} class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50">
 					{saving ? 'Saving…' : 'Save'}
 				</button>
 			</div>
@@ -157,7 +179,12 @@
 				<option value="blue-sidebar">Blue Sidebar</option>
 				<option value="minimal-clean">Minimal Clean</option>
 			</select>
-			<a href="/cv/{cv.id}/preview" target="_blank" class="ml-auto text-xs text-blue-600 hover:underline">Open preview ↗</a>
+			<div class="ml-auto flex items-center gap-3">
+			<button onclick={copyShareLink} class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1" title="Copy share link">
+				🔗 {shareCopied ? 'Copied!' : 'Share'}
+			</button>
+			<a href="/cv/{cv.id}/preview" target="_blank" class="text-xs text-blue-600 hover:underline">Open preview ↗</a>
+		</div>
 		</div>
 
 		<!-- Tabs -->

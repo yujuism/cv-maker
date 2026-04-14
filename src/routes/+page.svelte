@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getUser, isLoading } from '$lib/authStore.svelte';
-	import { getCVs, createCV, deleteCV } from '$lib/cvStore';
+	import { getCVs, createCV, deleteCV, duplicateCV } from '$lib/cvStore';
 	import type { CV, TemplateId } from '$lib/types';
 	import { goto } from '$app/navigation';
 
@@ -53,6 +53,14 @@
 		cvs = cvs.filter((c) => c.id !== id);
 	}
 
+	async function handleDuplicate(id: string) {
+		const user = getUser();
+		if (!user) return;
+		const newId = await duplicateCV(user.uid, id);
+		await load();
+		goto(`/cv/${newId}`);
+	}
+
 	const templateLabels: Record<TemplateId, string> = {
 		'blue-sidebar': 'Blue Sidebar',
 		'minimal-clean': 'Minimal Clean'
@@ -96,6 +104,7 @@
 					<div class="flex gap-2">
 						<a href="/cv/{cv.id}" class="flex-1 text-center bg-blue-600 text-white text-sm py-1.5 rounded-lg hover:bg-blue-700 transition">Edit</a>
 						<a href="/cv/{cv.id}/preview" class="flex-1 text-center border border-gray-300 text-gray-600 text-sm py-1.5 rounded-lg hover:bg-gray-50 transition">Preview</a>
+						<button onclick={() => handleDuplicate(cv.id)} title="Duplicate" class="border border-gray-300 text-gray-500 text-sm px-2.5 rounded-lg hover:bg-gray-50 transition">⧉</button>
 					</div>
 				</div>
 				{/each}

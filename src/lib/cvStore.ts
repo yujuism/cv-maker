@@ -56,3 +56,23 @@ export async function getCV(userId: string, id: string): Promise<CV | null> {
 export async function deleteCV(userId: string, id: string): Promise<void> {
 	await remove(ref(db, `users/${userId}/cvs/${id}`));
 }
+
+export async function duplicateCV(userId: string, id: string): Promise<string> {
+	const original = await getCV(userId, id);
+	if (!original) throw new Error('CV not found');
+	const now = Date.now();
+	const newRef = push(ref(db, `users/${userId}/cvs`));
+	await set(newRef, {
+		userId,
+		name: `${original.name} (copy)`,
+		templateId: original.templateId,
+		data: original.data,
+		createdAt: now,
+		updatedAt: now
+	});
+	return newRef.key as string;
+}
+
+export async function getPublicCV(userId: string, id: string): Promise<CV | null> {
+	return getCV(userId, id);
+}

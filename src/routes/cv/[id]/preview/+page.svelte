@@ -7,8 +7,12 @@
 	import BlueSidebar from '$lib/templates/BlueSidebar.svelte';
 	import MinimalClean from '$lib/templates/MinimalClean.svelte';
 
+	import html2canvas from 'html2canvas';
+	import { jsPDF } from 'jspdf';
+
 	let cv = $state<CV | null>(null);
 	let loading = $state(true);
+	let exporting = $state(false);
 
 	const id = $derived(page.params.id);
 
@@ -27,8 +31,21 @@
 		loading = false;
 	}
 
-	function print() {
-		window.print();
+	async function exportPDF() {
+		const el = document.getElementById('cv-export-target');
+		if (!el || !cv) return;
+		exporting = true;
+		try {
+			const canvas = await html2canvas(el, { scale: 2, useCORS: true });
+			const imgData = canvas.toDataURL('image/png');
+			const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+			const pageWidth = pdf.internal.pageSize.getWidth();
+			const pageHeight = pdf.internal.pageSize.getHeight();
+			pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+			pdf.save(`${cv.data.name || cv.name || 'cv'}.pdf`);
+		} finally {
+			exporting = false;
+		}
 	}
 </script>
 
@@ -61,14 +78,17 @@
 		<a href="/cv/{cv.id}" class="text-sm text-gray-500 hover:text-gray-700">← Back to editor</a>
 		<div class="flex items-center gap-3">
 			<span class="text-sm text-gray-700 font-medium">{cv.name}</span>
-			<button onclick={print} class="bg-blue-600 text-white text-sm px-4 py-1.5 rounded hover:bg-blue-700">
-				Print / Save as PDF
+			<button onclick={() => window.print()} class="border border-gray-300 text-gray-600 text-sm px-4 py-1.5 rounded hover:bg-gray-50">
+				Print
+			</button>
+			<button onclick={exportPDF} disabled={exporting} class="bg-blue-600 text-white text-sm px-4 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50">
+				{exporting ? 'Exporting…' : 'Download PDF'}
 			</button>
 		</div>
 	</div>
 
 	<div class="bg-gray-200 min-h-screen p-8 flex justify-center print:bg-white print:p-0">
-		<div class="shadow-2xl print:shadow-none">
+		<div id="cv-export-target" class="shadow-2xl print:shadow-none">
 			{#if cv.templateId === 'blue-sidebar'}
 				<BlueSidebar data={cv.data} />
 			{:else}
