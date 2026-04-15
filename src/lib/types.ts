@@ -40,6 +40,10 @@ export interface CVData {
 	linkedin: string;
 	photoUrl: string;
 
+	// Photo crop position (CSS object-position percentages)
+	photoCropX: number; // 0-100, default 50
+	photoCropY: number; // 0-100, default 50
+
 	// About
 	about: string;
 
@@ -58,12 +62,25 @@ export interface CVData {
 
 export type TemplateId = 'blue-sidebar' | 'minimal-clean';
 
+export type CVStatus = 'draft' | 'active' | 'archived';
+
 export interface CV {
 	id: string;
 	userId: string;
-	name: string; // CV label e.g. "Backend Role", "Game Dev Role"
+	name: string;
 	templateId: TemplateId;
+	status: CVStatus;
 	data: CVData;
 	createdAt: number;
+	updatedAt: number;
+}
+
+export interface UserProfile {
+	displayName: string;
+	bio: string;
+	photoUrl: string;
+	defaultEmail: string;
+	defaultPhone: string;
+	defaultAddress: string;
 	updatedAt: number;
 }

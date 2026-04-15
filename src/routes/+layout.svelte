@@ -54,6 +54,7 @@
 					<img src={user.photoURL} alt="avatar" class="w-7 h-7 rounded-full" />
 				{/if}
 				<span class="text-sm text-gray-600">{user.displayName ?? user.email}</span>
+				<a href="/profile" class="text-sm text-gray-500 hover:text-gray-700">Profile</a>
 				<button onclick={signOut} class="text-sm text-red-500 hover:text-red-700">Sign out</button>
 			{:else}
 				<a href="/auth" class="bg-blue-600 text-white text-sm px-4 py-1.5 rounded hover:bg-blue-700">Sign in</a>

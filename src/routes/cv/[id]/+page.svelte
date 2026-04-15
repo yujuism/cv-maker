@@ -18,6 +18,28 @@
 	let shareCopied = $state(false);
 	let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
 
+	// Crop modal state
+	let showCropModal = $state(false);
+	let cropImageSrc = $state('');
+	let cropFile: File | null = null;
+	let cropX = $state(50);
+	let cropY = $state(50);
+	let isDragging = $state(false);
+	let dragStart = { x: 0, y: 0, cropX: 50, cropY: 50 };
+
+	function onCropMouseDown(e: MouseEvent) {
+		isDragging = true;
+		dragStart = { x: e.clientX, y: e.clientY, cropX, cropY };
+	}
+	function onCropMouseMove(e: MouseEvent) {
+		if (!isDragging) return;
+		const dx = ((e.clientX - dragStart.x) / 200) * 100;
+		const dy = ((e.clientY - dragStart.y) / 200) * 100;
+		cropX = Math.max(0, Math.min(100, dragStart.cropX - dx));
+		cropY = Math.max(0, Math.min(100, dragStart.cropY - dy));
+	}
+	function onCropMouseUp() { isDragging = false; }
+
 	function copyShareLink() {
 		const user = getUser();
 		if (!user || !cv) return;
@@ -65,18 +87,32 @@
 		setTimeout(() => (saveMsg = ''), 2000);
 	}
 
-	async function handlePhotoUpload(e: Event) {
+	function handlePhotoUpload(e: Event) {
 		const input = e.target as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file || !cv) return;
+		cropFile = file;
+		cropImageSrc = URL.createObjectURL(file);
+		cropX = cv.data.photoCropX ?? 50;
+		cropY = cv.data.photoCropY ?? 50;
+		showCropModal = true;
+	}
+
+	async function confirmCrop() {
+		const user = getUser();
+		if (!cropFile || !cv || !user) return;
+		showCropModal = false;
 		uploadingPhoto = true;
 		try {
-			const storageRef = ref(storage, `photos/${getUser()?.uid}/${cv.id}`);
-			await uploadBytes(storageRef, file);
+			const storageRef = ref(storage, `photos/${user.uid}/${cv.id}`);
+			await uploadBytes(storageRef, cropFile);
 			const url = await getDownloadURL(storageRef);
 			cv.data.photoUrl = url;
+			cv.data.photoCropX = cropX;
+			cv.data.photoCropY = cropY;
 		} finally {
 			uploadingPhoto = false;
+			URL.revokeObjectURL(cropImageSrc);
 		}
 	}
 
@@ -329,6 +365,36 @@
 			{:else}
 				<MinimalClean data={cv.data} />
 			{/if}
+		</div>
+	</div>
+</div>
+{/if}
+
+<!-- Crop modal -->
+{#if showCropModal}
+<div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+	<div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+		<h2 class="text-base font-bold text-gray-800 mb-1">Position Photo</h2>
+		<p class="text-xs text-gray-400 mb-4">Drag to reposition within the circle</p>
+		<div
+			class="w-48 h-48 rounded-full overflow-hidden mx-auto border-4 border-blue-500 cursor-grab active:cursor-grabbing select-none"
+			role="presentation"
+			onmousedown={onCropMouseDown}
+			onmousemove={onCropMouseMove}
+			onmouseup={onCropMouseUp}
+			onmouseleave={onCropMouseUp}
+		>
+			<img
+				src={cropImageSrc}
+				alt="crop preview"
+				class="w-full h-full object-cover pointer-events-none"
+				style="object-position:{cropX}% {cropY}%;"
+				draggable="false"
+			/>
+		</div>
+		<div class="flex gap-2 mt-6">
+			<button onclick={() => { showCropModal = false; URL.revokeObjectURL(cropImageSrc); }} class="flex-1 border border-gray-300 text-gray-600 py-2 rounded-lg text-sm">Cancel</button>
+			<button onclick={confirmCrop} class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700">Use this</button>
 		</div>
 	</div>
 </div>

@@ -9,6 +9,8 @@ export const blankCVData: CVData = {
 	address: '',
 	linkedin: '',
 	photoUrl: '',
+	photoCropX: 50,
+	photoCropY: 50,
 	about: '',
 	skills: [],
 	workExperience: [],

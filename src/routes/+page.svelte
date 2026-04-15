@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getUser, isLoading } from '$lib/authStore.svelte';
-	import { getCVs, createCV, deleteCV, duplicateCV } from '$lib/cvStore';
-	import type { CV, TemplateId } from '$lib/types';
+	import { getCVs, createCV, deleteCV, duplicateCV, updateCVStatus } from '$lib/cvStore';
+	import type { CV, CVStatus, TemplateId } from '$lib/types';
 	import { goto } from '$app/navigation';
 
 	let cvs = $state<CV[]>([]);
@@ -10,6 +10,7 @@
 	let newName = $state('');
 	let newTemplate = $state<TemplateId>('blue-sidebar');
 	let creating = $state(false);
+	let filterStatus = $state<CVStatus | 'all'>('all');
 
 	async function load() {
 		const user = getUser();
@@ -61,6 +62,23 @@
 		goto(`/cv/${newId}`);
 	}
 
+	async function handleStatusChange(id: string, status: CVStatus) {
+		const user = getUser();
+		if (!user) return;
+		await updateCVStatus(user.uid, id, status);
+		cvs = cvs.map((c) => c.id === id ? { ...c, status } : c);
+	}
+
+	const filteredCVs = $derived(
+		filterStatus === 'all' ? cvs : cvs.filter((c) => (c.status ?? 'active') === filterStatus)
+	);
+
+	const statusColors: Record<CVStatus, string> = {
+		active: 'text-green-600 bg-green-50',
+		draft: 'text-yellow-600 bg-yellow-50',
+		archived: 'text-gray-400 bg-gray-100'
+	};
+
 	const templateLabels: Record<TemplateId, string> = {
 		'blue-sidebar': 'Blue Sidebar',
 		'minimal-clean': 'Minimal Clean'
@@ -71,11 +89,21 @@
 	{#if isLoading() || !getUser()}
 		<div class="text-center py-20 text-gray-400">Loading…</div>
 	{:else}
-		<div class="flex items-center justify-between mb-8">
+		<div class="flex items-center justify-between mb-4">
 			<h1 class="text-2xl font-bold text-gray-800">My CVs</h1>
 			<button onclick={() => (showCreate = true)} class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
 				+ New CV
 			</button>
+		</div>
+
+		<!-- Status filter -->
+		<div class="flex gap-2 mb-6">
+			{#each (['all', 'active', 'draft', 'archived'] as const) as s}
+			<button
+				onclick={() => (filterStatus = s)}
+				class="text-xs px-3 py-1.5 rounded-full border capitalize transition {filterStatus === s ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-500 hover:bg-gray-50'}"
+			>{s}</button>
+			{/each}
 		</div>
 
 		{#if fetching}
@@ -87,19 +115,31 @@
 					Create CV
 				</button>
 			</div>
+		{:else if filteredCVs.length === 0}
+			<div class="text-center py-16 text-gray-400">No {filterStatus} CVs.</div>
 		{:else}
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-				{#each cvs as cv}
+				{#each filteredCVs as cv}
 				<div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition">
-					<div class="flex items-start justify-between mb-3">
+					<div class="flex items-start justify-between mb-2">
 						<div>
 							<h3 class="font-semibold text-gray-800">{cv.name}</h3>
 							<span class="text-xs text-gray-400 mt-0.5 block">{templateLabels[cv.templateId]}</span>
 						</div>
 						<button onclick={() => handleDelete(cv.id)} class="text-gray-300 hover:text-red-400 transition text-lg leading-none" title="Delete">✕</button>
 					</div>
-					<div class="text-xs text-gray-400 mb-4">
-						Updated {new Date(cv.updatedAt).toLocaleDateString()}
+					<!-- Status badge + selector -->
+					<div class="flex items-center gap-2 mb-3">
+						<select
+							value={cv.status ?? 'active'}
+							onchange={(e) => handleStatusChange(cv.id, (e.target as HTMLSelectElement).value as CVStatus)}
+							class="text-xs px-2 py-0.5 rounded-full border-0 font-medium cursor-pointer {statusColors[cv.status ?? 'active']}"
+						>
+							<option value="active">Active</option>
+							<option value="draft">Draft</option>
+							<option value="archived">Archived</option>
+						</select>
+						<span class="text-xs text-gray-400">Updated {new Date(cv.updatedAt).toLocaleDateString()}</span>
 					</div>
 					<div class="flex gap-2">
 						<a href="/cv/{cv.id}" class="flex-1 text-center bg-blue-600 text-white text-sm py-1.5 rounded-lg hover:bg-blue-700 transition">Edit</a>

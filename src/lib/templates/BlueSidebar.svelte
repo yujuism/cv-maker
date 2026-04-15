@@ -9,7 +9,7 @@
 	<div style="width:36%; background:#f0f2f5; display:flex; flex-direction:column; align-items:center; padding:20px 14px 16px; align-self:stretch;">
 		<!-- Photo -->
 		{#if data.photoUrl}
-			<img src={data.photoUrl} alt={data.name} style="width:96px; height:96px; border-radius:50%; object-fit:cover; border:4px solid white; margin-bottom:16px;" />
+			<img src={data.photoUrl} alt={data.name} style="width:96px; height:96px; border-radius:50%; object-fit:cover; border:4px solid white; margin-bottom:16px; object-position:{data.photoCropX ?? 50}% {data.photoCropY ?? 50}%;" />
 		{:else if data.name}
 			<div style="width:96px; height:96px; border-radius:50%; background:#9ca3af; display:flex; align-items:center; justify-content:center; color:white; font-size:30px; font-weight:700; margin-bottom:16px; border:4px solid white;">
 				{data.name.charAt(0)}

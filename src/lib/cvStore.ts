@@ -1,6 +1,6 @@
 import { ref, push, set, update, remove, get } from 'firebase/database';
 import { db } from './firebase';
-import type { CV, CVData, TemplateId } from './types';
+import type { CV, CVData, CVStatus, TemplateId } from './types';
 import { blankCVData } from './defaultCV';
 
 function sanitizeCV(id: string, val: any): CV {
@@ -12,6 +12,7 @@ function sanitizeCV(id: string, val: any): CV {
 		education: val.data?.education ? Object.values(val.data.education) : [],
 		languages: val.data?.languages ? Object.values(val.data.languages) : []
 	};
+	val.status = val.status ?? 'active';
 	return { id, ...val };
 }
 
@@ -36,11 +37,25 @@ export async function createCV(
 		userId,
 		name,
 		templateId,
+		status: 'active' as CVStatus,
 		data: blankCVData,
 		createdAt: now,
 		updatedAt: now
 	});
 	return newRef.key as string;
+}
+
+export async function updateCVStatus(userId: string, id: string, status: CVStatus): Promise<void> {
+	await update(ref(db, `users/${userId}/cvs/${id}`), { status, updatedAt: Date.now() });
+}
+
+export async function updateCVName(userId: string, id: string, name: string): Promise<void> {
+	await update(ref(db, `users/${userId}/cvs/${id}`), { name, updatedAt: Date.now() });
+}
+
+export async function getCVsByStatus(userId: string, status: CVStatus): Promise<CV[]> {
+	const all = await getCVs(userId);
+	return all.filter((cv) => (cv.status ?? 'active') === status);
 }
 
 export async function updateCV(userId: string, id: string, updates: Partial<Omit<CV, 'id'>>): Promise<void> {
