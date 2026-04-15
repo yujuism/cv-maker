@@ -2,10 +2,9 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { getUser, isLoading } from '$lib/authStore.svelte';
+	import { storage } from '$lib/firebase';
+	import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 	import { getCV, updateCV } from '$lib/cvStore';
-
-	const CLOUDINARY_CLOUD = 'daibsgvaj';
-	const CLOUDINARY_PRESET = 'ynmsmcya';
 	import type { CV, CVData, TemplateId, WorkExperience, Education, Language, Skill } from '$lib/types';
 	import BlueSidebar from '$lib/templates/BlueSidebar.svelte';
 	import MinimalClean from '$lib/templates/MinimalClean.svelte';
@@ -72,16 +71,10 @@
 		if (!file || !cv) return;
 		uploadingPhoto = true;
 		try {
-			const formData = new FormData();
-			formData.append('file', file);
-			formData.append('upload_preset', CLOUDINARY_PRESET);
-			formData.append('folder', `cv-maker/${getUser()?.uid}`);
-			const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
-				method: 'POST',
-				body: formData
-			});
-			const data = await res.json();
-			cv.data.photoUrl = data.secure_url;
+			const storageRef = ref(storage, `photos/${getUser()?.uid}/${cv.id}`);
+			await uploadBytes(storageRef, file);
+			const url = await getDownloadURL(storageRef);
+			cv.data.photoUrl = url;
 		} finally {
 			uploadingPhoto = false;
 		}
