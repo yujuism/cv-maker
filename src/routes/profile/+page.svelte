@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { getUser, isLoading } from '$lib/authStore.svelte';
-	import { createUserProfile, getUserProfile, updateUserProfile, deleteUserProfile } from '$lib/userProfileStore';
+	import { createUserProfile, getUserProfile, updateUserProfile, deleteUserProfile, deleteAccount } from '$lib/userProfileStore';
+	import { signOut } from '$lib/authStore.svelte';
 	import { storage } from '$lib/firebase';
 	import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 	import type { UserProfile } from '$lib/types';
@@ -12,6 +13,7 @@
 	let saveMsg = $state('');
 	let uploadingPhoto = $state(false);
 	let showDeleteConfirm = $state(false);
+	let showDeleteAccountConfirm = $state(false);
 
 	// Photo crop state
 	let showCropModal = $state(false);
@@ -109,6 +111,14 @@
 		saveMsg = 'Profile deleted.';
 		setTimeout(() => goto('/'), 1500);
 	}
+
+	async function handleDeleteAccount() {
+		const user = getUser();
+		if (!user) return;
+		await deleteAccount(user.uid);
+		await signOut();
+		goto('/auth');
+	}
 </script>
 
 <svelte:head><title>My Profile — CV Maker</title></svelte:head>
@@ -172,9 +182,14 @@
 			</div>
 
 			<div class="flex items-center justify-between pt-2">
-				<button onclick={() => (showDeleteConfirm = true)} class="text-sm text-red-500 hover:text-red-700">
-					Delete profile
-				</button>
+				<div class="flex gap-3">
+					<button onclick={() => (showDeleteConfirm = true)} class="text-sm text-red-400 hover:text-red-600">
+						Delete profile
+					</button>
+					<button onclick={() => (showDeleteAccountConfirm = true)} class="text-sm text-red-600 hover:text-red-800 font-medium">
+						Delete account
+					</button>
+				</div>
 				<div class="flex items-center gap-3">
 					{#if saveMsg}<span class="text-xs text-green-600">{saveMsg}</span>{/if}
 					<button onclick={save} disabled={saving} class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
@@ -195,6 +210,26 @@
 		<div class="flex gap-2">
 			<button onclick={() => (showDeleteConfirm = false)} class="flex-1 border border-gray-300 text-gray-600 py-2 rounded-lg text-sm">Cancel</button>
 			<button onclick={handleDelete} class="flex-1 bg-red-600 text-white py-2 rounded-lg text-sm hover:bg-red-700">Delete</button>
+		</div>
+	</div>
+</div>
+{/if}
+
+<!-- Delete account confirm modal -->
+{#if showDeleteAccountConfirm}
+<div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+	<div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+		<h2 class="text-lg font-bold text-gray-800 mb-2">Delete Account?</h2>
+		<p class="text-sm text-gray-500 mb-2">This will permanently delete:</p>
+		<ul class="text-sm text-red-600 mb-6 list-disc list-inside space-y-1">
+			<li>Your profile</li>
+			<li>All your CVs</li>
+			<li>All your data</li>
+		</ul>
+		<p class="text-xs text-gray-400 mb-6">This action cannot be undone.</p>
+		<div class="flex gap-2">
+			<button onclick={() => (showDeleteAccountConfirm = false)} class="flex-1 border border-gray-300 text-gray-600 py-2 rounded-lg text-sm">Cancel</button>
+			<button onclick={handleDeleteAccount} class="flex-1 bg-red-600 text-white py-2 rounded-lg text-sm hover:bg-red-700 font-medium">Yes, delete everything</button>
 		</div>
 	</div>
 </div>

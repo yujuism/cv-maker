@@ -33,3 +33,7 @@ export async function updateUserProfile(userId: string, data: Partial<UserProfil
 export async function deleteUserProfile(userId: string): Promise<void> {
 	await remove(ref(db, `users/${userId}/profile`));
 }
+
+export async function deleteAccount(userId: string): Promise<void> {
+	await remove(ref(db, `users/${userId}`));
+}
