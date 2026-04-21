@@ -6,14 +6,10 @@
 		signOut,
 		signInWithGoogle,
 		loginWithEmail,
-		registerWithEmail,
-		sendOTP,
-		verifyOTP,
-		setupRecaptcha
+		registerWithEmail
 	} from '$lib/authStore.svelte';
-	import type { RecaptchaVerifier } from 'firebase/auth';
 
-	type Mode = 'login' | 'register' | 'otp-send' | 'otp-verify' | 'verify-pending';
+	type Mode = 'login' | 'register' | 'verify-pending';
 	let mode = $state<Mode>('login');
 	let pendingEmail = $state('');
 
@@ -22,15 +18,9 @@
 	let password = $state('');
 	let confirmPassword = $state('');
 
-	// OTP fields
-	let phone = $state('');
-	let otpCode = $state('');
-
 	let error = $state('');
 	let info = $state('');
 	let submitting = $state(false);
-
-	let recaptcha: RecaptchaVerifier | null = null;
 
 	// Redirect if already logged in and verified
 	$effect(() => {
@@ -82,37 +72,6 @@
 		}
 	}
 
-	async function handleSendOTP() {
-		reset();
-		if (!phone) { error = 'Please enter a phone number.'; return; }
-		submitting = true;
-		try {
-			if (!recaptcha) recaptcha = setupRecaptcha('recaptcha-container');
-			await sendOTP(phone, recaptcha);
-			mode = 'otp-verify';
-			info = 'OTP sent to ' + phone;
-		} catch (e: any) {
-			error = friendlyError(e.code);
-			recaptcha = null;
-		} finally {
-			submitting = false;
-		}
-	}
-
-	async function handleVerifyOTP() {
-		reset();
-		if (!otpCode) { error = 'Please enter the OTP code.'; return; }
-		submitting = true;
-		try {
-			await verifyOTP(otpCode);
-			goto('/');
-		} catch (e: any) {
-			error = friendlyError(e.code);
-		} finally {
-			submitting = false;
-		}
-	}
-
 	async function handleGoogle() {
 		reset();
 		submitting = true;
@@ -146,7 +105,6 @@
 	<title>Sign In — CV Maker</title>
 </svelte:head>
 
-<div id="recaptcha-container"></div>
 
 <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
 	<div class="bg-white rounded-2xl shadow-lg w-full max-w-md p-8">
@@ -171,7 +129,7 @@
 			</div>
 		{:else}
 
-		<!-- Tabs: Login / Register / OTP -->
+		<!-- Tabs: Login / Register -->
 		<div class="flex border-b border-gray-200 mb-6 text-sm font-medium">
 			<button
 				onclick={() => { mode = 'login'; reset(); }}
@@ -181,10 +139,6 @@
 				onclick={() => { mode = 'register'; reset(); }}
 				class="flex-1 pb-2 {mode === 'register' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-400 hover:text-gray-600'}"
 			>Register</button>
-			<button
-				onclick={() => { mode = 'otp-send'; reset(); }}
-				class="flex-1 pb-2 {mode === 'otp-send' || mode === 'otp-verify' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-400 hover:text-gray-600'}"
-			>Phone OTP</button>
 		</div>
 
 		<!-- Error / Info -->
@@ -238,38 +192,6 @@
 			</button>
 		</div>
 
-		<!-- OTP SEND -->
-		{:else if mode === 'otp-send'}
-		<div class="space-y-4">
-			<div>
-				<label for="otp-phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-				<input id="otp-phone" bind:value={phone} type="tel" placeholder="+628123456789"
-					class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-				<p class="text-xs text-gray-400 mt-1">Use international format e.g. +628...</p>
-			</div>
-			<button onclick={handleSendOTP} disabled={submitting}
-				class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
-				{submitting ? 'Sending OTP…' : 'Send OTP'}
-			</button>
-		</div>
-
-		<!-- OTP VERIFY -->
-		{:else if mode === 'otp-verify'}
-		<div class="space-y-4">
-			<p class="text-sm text-gray-600">{info || 'Enter the OTP sent to your phone.'}</p>
-			<div>
-				<label for="otp-code" class="block text-sm font-medium text-gray-700 mb-1">OTP Code</label>
-				<input id="otp-code" bind:value={otpCode} type="text" placeholder="123456" maxlength="6"
-					class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 tracking-widest text-center text-lg" />
-			</div>
-			<button onclick={handleVerifyOTP} disabled={submitting}
-				class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
-				{submitting ? 'Verifying…' : 'Verify OTP'}
-			</button>
-			<button onclick={() => { mode = 'otp-send'; info = ''; }} class="w-full text-sm text-gray-500 hover:text-gray-700">
-				← Back / Resend
-			</button>
-		</div>
 		{/if}
 
 		<!-- Divider -->
